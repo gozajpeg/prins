@@ -1,0 +1,33 @@
+{
+  "name": "prins",
+  "version": "1.0.0",
+  "description": "Pre-install package inspector for Node.js. Inspect size, licenses, authors, deprecations, and safety before packages touch your disk.",
+  "type": "module",
+  "main": "src/cli.js",
+  "bin": {
+    "prins": "./bin/prins.js",
+    "pri": "./bin/prins.js"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "preinstall",
+    "npm",
+    "inspector",
+    "security",
+    "license",
+    "disk-size",
+    "cli"
+  ],
+  "author": "gozajpeg",
+  "license": "MIT",
+  "dependencies": {}
+}

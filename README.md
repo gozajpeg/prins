@@ -1,8 +1,8 @@
 <div align="center">
   <img src="assets/prinsLogo.webp" alt="prins logo" width="380" />
   <h1>prins</h1>
-  <p><strong>Pre-install check for npm</strong></p>
-  <p>Know what you are installing: size, license, deprecation, and install scripts, before it touches your disk.</p>
+  <p><strong>npm Package Inspector & Installer</strong></p>
+  <p>Know what's inside before it hits your disk.</p>
 
   <p>
     <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg?style=flat-square" alt="node version" /></a>

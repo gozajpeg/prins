@@ -3,67 +3,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const LOCKFILES = [
+  ['pnpm-lock.yaml', 'pnpm', 'add'],
+  ['yarn.lock', 'yarn', 'add'],
+  ['bun.lockb', 'bun', 'add'],
+  ['bun.lock', 'bun', 'add'],
+  ['package-lock.json', 'npm', 'install']
+];
+
 export function detectPackageManager(startDir = process.cwd()) {
   let current = path.resolve(startDir);
-
   while (true) {
-    if (fs.existsSync(path.join(current, 'pnpm-lock.yaml'))) {
-      return {
-        name: 'pnpm',
-        bin: 'pnpm',
-        addCmd: 'add',
-        installCmd: 'install',
-        lockfile: 'pnpm-lock.yaml'
-      };
+    for (const [file, name, addCmd] of LOCKFILES) {
+      if (fs.existsSync(path.join(current, file))) {
+        return { name, bin: name, addCmd, installCmd: 'install', lockfile: file };
+      }
     }
-
-    if (fs.existsSync(path.join(current, 'yarn.lock'))) {
-      return {
-        name: 'yarn',
-        bin: 'yarn',
-        addCmd: 'add',
-        installCmd: 'install',
-        lockfile: 'yarn.lock'
-      };
-    }
-
-    if (
-      fs.existsSync(path.join(current, 'bun.lockb')) ||
-      fs.existsSync(path.join(current, 'bun.lock'))
-    ) {
-      return {
-        name: 'bun',
-        bin: 'bun',
-        addCmd: 'add',
-        installCmd: 'install',
-        lockfile: fs.existsSync(path.join(current, 'bun.lock')) ? 'bun.lock' : 'bun.lockb'
-      };
-    }
-
-    if (fs.existsSync(path.join(current, 'package-lock.json'))) {
-      return {
-        name: 'npm',
-        bin: 'npm',
-        addCmd: 'install',
-        installCmd: 'install',
-        lockfile: 'package-lock.json'
-      };
-    }
-
     const parent = path.dirname(current);
-    if (parent === current) {
-      // Reached filesystem root
-      break;
-    }
+    if (parent === current) break;
     current = parent;
   }
-
-  // Default fallback
-  return {
-    name: 'npm',
-    bin: 'npm',
-    addCmd: 'install',
-    installCmd: 'install',
-    lockfile: null
-  };
+  return { name: 'npm', bin: 'npm', addCmd: 'install', installCmd: 'install', lockfile: null };
 }

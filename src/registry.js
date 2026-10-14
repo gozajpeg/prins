@@ -44,40 +44,15 @@ export function parseSpecifier(specifier) {
   if (!specifier || typeof specifier !== 'string') {
     throw new Error('Package specifier must be a non-empty string');
   }
-
   const trimmed = specifier.trim();
-  let name = '';
-  let version = 'latest';
-
-  if (trimmed.startsWith('@')) {
-    const slashIndex = trimmed.indexOf('/');
-    if (slashIndex === -1) {
-      throw new Error(`Invalid scoped package specifier: "${specifier}"`);
-    }
-    const atIndex = trimmed.indexOf('@', slashIndex);
-    if (atIndex !== -1) {
-      name = trimmed.slice(0, atIndex);
-      version = trimmed.slice(atIndex + 1) || 'latest';
-    } else {
-      name = trimmed;
-      version = 'latest';
-    }
-  } else {
-    const atIndex = trimmed.indexOf('@');
-    if (atIndex !== -1) {
-      name = trimmed.slice(0, atIndex);
-      version = trimmed.slice(atIndex + 1) || 'latest';
-    } else {
-      name = trimmed;
-      version = 'latest';
-    }
+  if (trimmed.startsWith('@') && !trimmed.includes('/')) {
+    throw new Error(`Invalid scoped package specifier: "${specifier}"`);
   }
-
-  if (!name) {
-    throw new Error(`Invalid package name in: "${specifier}"`);
+  const atIndex = trimmed.lastIndexOf('@');
+  if (atIndex > 0) {
+    return { name: trimmed.slice(0, atIndex), version: trimmed.slice(atIndex + 1) || 'latest', raw: trimmed };
   }
-
-  return { name, version, raw: trimmed };
+  return { name: trimmed, version: 'latest', raw: trimmed };
 }
 
 export function resolveAuthor(manifest) {

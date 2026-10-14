@@ -3,22 +3,15 @@
 import { bold, dim, cyan, green, yellow, red, gray, stripAnsi } from './colors.js';
 
 export function formatBytes(bytes) {
-  if (bytes === null || bytes === undefined || isNaN(bytes)) {
-    return 'Unknown';
-  }
-  if (bytes < 1024) {
-    return `${bytes} B`;
-  }
-  if (bytes < 1024 * 1024) {
-    const kb = (bytes / 1024).toFixed(1).replace(/\.0$/, '');
-    return `${kb} KB`;
-  }
-  if (bytes < 1024 * 1024 * 1024) {
-    const mb = (bytes / (1024 * 1024)).toFixed(1).replace(/\.0$/, '');
-    return `${mb} MB`;
-  }
-  const gb = (bytes / (1024 * 1024 * 1024)).toFixed(1).replace(/\.0$/, '');
-  return `${gb} GB`;
+  if (bytes === null || bytes === undefined || isNaN(bytes)) return 'Unknown';
+  if (bytes < 1024) return `${bytes} B`;
+  const units = ['KB', 'MB', 'GB'];
+  let i = -1;
+  do {
+    bytes /= 1024;
+    i++;
+  } while (bytes >= 1024 && i < units.length - 1);
+  return `${bytes.toFixed(1).replace(/\.0$/, '')} ${units[i]}`;
 }
 
 export function renderSingleCard(pkg, safety) {

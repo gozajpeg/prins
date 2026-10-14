@@ -114,4 +114,4 @@ prins --dry-run express
 
 ### License
 
-MIT License. Copyright (c) 2026 gozajpeg.
+MIT License.

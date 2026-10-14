@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseSpecifier, resolveAuthor, resolveLicense } from '../src/registry.js';
+import { parseSpecifier, resolveAuthor, resolveLicense, resolveRegistryUrl } from '../src/registry.js';
 
 describe('registry: parseSpecifier', () => {
   test('parses plain package name', () => {
@@ -85,5 +85,16 @@ describe('registry: resolveLicense', () => {
 
   test('defaults to UNLICENSED when missing', () => {
     assert.equal(resolveLicense({}), 'UNLICENSED');
+  });
+});
+
+describe('registry: resolveRegistryUrl', () => {
+  test('returns customUrl when supplied', () => {
+    assert.equal(resolveRegistryUrl(null, 'https://custom.npm.org/'), 'https://custom.npm.org');
+  });
+
+  test('falls back to default registry when no config exists', () => {
+    const url = resolveRegistryUrl();
+    assert.ok(url.startsWith('http'));
   });
 });

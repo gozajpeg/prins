@@ -51,7 +51,7 @@ export function checkScriptsSafety(scripts = {}) {
     return {
       isSafe: false,
       hooks: detected,
-      label: `Warning (${detected.join(', ')})`,
+      label: `Warning: ${detected.join(', ')}`,
       shortLabel: 'Warning',
       description: `Executes background ${detected.join(', ')} script during installation`
     };
@@ -60,8 +60,8 @@ export function checkScriptsSafety(scripts = {}) {
   return {
     isSafe: true,
     hooks: [],
-    label: 'Safe (No background scripts)',
-    shortLabel: 'Safe',
+    label: 'None',
+    shortLabel: 'None',
     description: 'No background scripts executed during installation'
   };
 }

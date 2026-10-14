@@ -1,7 +1,7 @@
 {
   "name": "prins",
   "version": "1.0.0",
-  "description": "npm pre-install package inspector and installer. Inspect size, licenses, authors, deprecations, and safety before packages touch your disk.",
+  "description": "Pre-install check for npm. Inspect size, license, deprecations, and install scripts before packages touch your disk.",
   "type": "module",
   "main": "src/cli.js",
   "bin": {
@@ -29,5 +29,13 @@
   ],
   "author": "gozajpeg",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gozajpeg/prins.git"
+  },
+  "homepage": "https://github.com/gozajpeg/prins#readme",
+  "bugs": {
+    "url": "https://github.com/gozajpeg/prins/issues"
+  }
 }

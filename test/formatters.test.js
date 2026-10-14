@@ -39,7 +39,7 @@ describe('formatters: renderSingleCard', () => {
     const safety = {
       scripts: {
         isSafe: true,
-        label: 'Safe (No background scripts)'
+        label: 'None'
       },
       license: {
         isRisk: false
@@ -57,7 +57,7 @@ describe('formatters: renderSingleCard', () => {
     assert.match(rendered, /Unpacked Size:\s+1\.8 MB \(direct\)/);
     assert.match(rendered, /Dependencies:\s+4 direct packages/);
     assert.match(rendered, /Status:\s+Active/);
-    assert.match(rendered, /Safety:\s+Safe \(No background scripts\)/);
+    assert.match(rendered, /Install Scripts:\s+None/);
   });
 });
 
@@ -97,6 +97,7 @@ describe('formatters: renderMultiTable', () => {
     const rendered = stripAnsi(renderMultiTable(items));
     assert.match(rendered, /PRE-INSTALL SUMMARY \(2 packages requested\)/);
     assert.match(rendered, /Package\s+\| Version\s+\| Author/);
+    assert.match(rendered, /Deps\s+\| Scripts/);
     assert.match(rendered, /express/);
     assert.match(rendered, /moment/);
     assert.match(rendered, /TOTAL: 2 packages/);

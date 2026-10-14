@@ -176,11 +176,27 @@ export async function run(rawArgs = process.argv.slice(2)) {
 
   // Prompt confirmation
   if (!args.yes) {
-    const promptMsg = assessedItems.length === 1
-      ? '\nInstall package? [Y/n]: '
-      : `\nInstall all ${assessedItems.length} packages? [Y/n]: `;
+    if (!process.stdin.isTTY) {
+      console.error(red('Error: Non-interactive environment detected.'));
+      console.error('Pass -y to confirm installation or --dry-run to preview metadata.');
+      return 1;
+    }
 
-    const confirmed = await promptConfirmation(promptMsg, true);
+    const hasWarnings = assessedItems.some(item => !item.safety.isClean);
+    const defaultYes = !hasWarnings;
+
+    let promptMsg;
+    if (assessedItems.length === 1) {
+      promptMsg = defaultYes
+        ? '\nInstall package? [Y/n]: '
+        : '\nInstall package? [y/N]: ';
+    } else {
+      promptMsg = defaultYes
+        ? `\nInstall all ${assessedItems.length} packages? [Y/n]: `
+        : `\nInstall all ${assessedItems.length} packages? [y/N]: `;
+    }
+
+    const confirmed = await promptConfirmation(promptMsg, defaultYes);
     if (!confirmed) {
       console.log('Installation cancelled.');
       return 0;

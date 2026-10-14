@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { checkScriptsSafety, classifyLicense, assessPackageSafety } from '../src/safety.js';
 
 describe('safety: checkScriptsSafety', () => {
-  test('marks packages without install hooks as Safe', () => {
+  test('marks packages without install hooks as None', () => {
     const result = checkScriptsSafety({
       test: 'vitest',
       build: 'tsc',
@@ -11,8 +11,8 @@ describe('safety: checkScriptsSafety', () => {
     });
     assert.equal(result.isSafe, true);
     assert.equal(result.hooks.length, 0);
-    assert.equal(result.shortLabel, 'Safe');
-    assert.match(result.label, /Safe/);
+    assert.equal(result.shortLabel, 'None');
+    assert.equal(result.label, 'None');
   });
 
   test('flags postinstall hook', () => {

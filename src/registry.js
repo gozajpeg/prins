@@ -1,3 +1,43 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+
+export function resolveRegistryUrl(scope = null, customUrl = null) {
+  if (customUrl) {
+    return customUrl.replace(/\/$/, '');
+  }
+
+  const envRegistry = process.env.NPM_CONFIG_REGISTRY || process.env.npm_config_registry;
+  if (envRegistry) {
+    return envRegistry.trim().replace(/\/$/, '');
+  }
+
+  try {
+    const cwdNpmrc = path.join(process.cwd(), '.npmrc');
+    const homeNpmrc = path.join(os.homedir(), '.npmrc');
+    const npmrcPath = fs.existsSync(cwdNpmrc) ? cwdNpmrc : (fs.existsSync(homeNpmrc) ? homeNpmrc : null);
+
+    if (npmrcPath) {
+      const lines = fs.readFileSync(npmrcPath, 'utf8').split(/\r?\n/);
+      if (scope) {
+        const scopedPrefix = `${scope}:registry=`;
+        const scopedLine = lines.find(l => l.trim().startsWith(scopedPrefix));
+        if (scopedLine) {
+          return scopedLine.split('=')[1].trim().replace(/\/$/, '');
+        }
+      }
+      const regLine = lines.find(l => l.trim().startsWith('registry='));
+      if (regLine) {
+        return regLine.split('=')[1].trim().replace(/\/$/, '');
+      }
+    }
+  } catch {
+    // Fall back to public npm registry
+  }
+
+  return 'https://registry.npmjs.org';
+}
+
 // Package specifier parsing and npm registry queries
 
 export function parseSpecifier(specifier) {
@@ -76,7 +116,8 @@ export function resolveLicense(manifest) {
 export async function fetchPackageMetadata(specifier, options = {}) {
   const { name, version } = parseSpecifier(specifier);
   const timeoutMs = options.timeoutMs ?? 10000;
-  const registryUrl = options.registryUrl ?? 'https://registry.npmjs.org';
+  const scope = name.startsWith('@') ? name.slice(0, name.indexOf('/')) : null;
+  const registryUrl = resolveRegistryUrl(scope, options.registryUrl);
 
   // npm requires scoped names to be URI encoded as @scope%2Fpkg
   const encodedName = name.replace('/', '%2f');

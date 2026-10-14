@@ -58,10 +58,10 @@ export function renderSingleCard(pkg, safety) {
   const statusColor = safety.deprecation.isDeprecated ? red('Deprecated') : green('Active');
   rows.push(formatRow('Status', statusStr, statusColor));
 
-  // Safety
-  const safetyStr = safety.scripts.label;
-  const safetyColor = safety.scripts.isSafe ? green(safetyStr) : yellow(safetyStr);
-  rows.push(formatRow('Safety', safetyStr, safetyColor));
+  // Install scripts
+  const scriptsLabel = safety.scripts.label;
+  const scriptsColor = safety.scripts.isSafe ? green(scriptsLabel) : yellow(scriptsLabel);
+  rows.push(formatRow('Install Scripts', scriptsLabel, scriptsColor));
 
   rows.push(line);
 
@@ -77,7 +77,7 @@ export function renderSingleCard(pkg, safety) {
 }
 
 export function renderMultiTable(items) {
-  const headers = ['Package', 'Version', 'Author', 'License', 'Size', 'Safety', 'Status'];
+  const headers = ['Package', 'Version', 'Author', 'License', 'Size', 'Deps', 'Scripts', 'Status'];
 
   const rows = items.map(({ pkg, safety }) => {
     return {
@@ -87,8 +87,9 @@ export function renderMultiTable(items) {
       license: pkg.license,
       licenseIsRisk: safety.license.isRisk,
       size: formatBytes(pkg.unpackedSize),
-      safety: safety.scripts.shortLabel,
-      safetyIsSafe: safety.scripts.isSafe,
+      deps: `${pkg.dependenciesCount} direct`,
+      scripts: safety.scripts.shortLabel,
+      scriptsIsSafe: safety.scripts.isSafe,
       status: safety.deprecation.isDeprecated ? 'Deprecated' : 'Active',
       isDeprecated: safety.deprecation.isDeprecated,
       deprecationReason: safety.deprecation.reason,
@@ -100,10 +101,11 @@ export function renderMultiTable(items) {
   const colWidths = {
     pkg: Math.max(7, ...rows.map(r => r.pkg.length)),
     version: Math.max(7, ...rows.map(r => r.version.length)),
-    author: Math.max(6, Math.min(24, Math.max(...rows.map(r => r.author.length)))),
+    author: Math.max(6, Math.min(22, Math.max(...rows.map(r => r.author.length)))),
     license: Math.max(7, ...rows.map(r => r.license.length)),
     size: Math.max(6, ...rows.map(r => r.size.length)),
-    safety: Math.max(6, ...rows.map(r => r.safety.length)),
+    deps: Math.max(6, ...rows.map(r => r.deps.length)),
+    scripts: Math.max(7, ...rows.map(r => r.scripts.length)),
     status: Math.max(6, ...rows.map(r => r.status.length))
   };
 
@@ -113,7 +115,7 @@ export function renderMultiTable(items) {
 
   const tableInnerWidth =
     colWidths.pkg + colWidths.version + colWidths.author + colWidths.license +
-    colWidths.size + colWidths.safety + colWidths.status + 22;
+    colWidths.size + colWidths.deps + colWidths.scripts + colWidths.status + 25;
 
   const headerTitle = `PRE-INSTALL SUMMARY (${items.length} package${items.length === 1 ? '' : 's'} requested)`;
   const outerWidth = Math.max(tableInnerWidth, headerTitle.length + 4);
@@ -124,11 +126,11 @@ export function renderMultiTable(items) {
   lines.push(borderLine);
 
   // Table header
-  const th = `| ${headers[0].padEnd(colWidths.pkg)} | ${headers[1].padEnd(colWidths.version)} | ${headers[2].padEnd(colWidths.author)} | ${headers[3].padEnd(colWidths.license)} | ${headers[4].padEnd(colWidths.size)} | ${headers[5].padEnd(colWidths.safety)} | ${headers[6].padEnd(colWidths.status)} |`;
+  const th = `| ${headers[0].padEnd(colWidths.pkg)} | ${headers[1].padEnd(colWidths.version)} | ${headers[2].padEnd(colWidths.author)} | ${headers[3].padEnd(colWidths.license)} | ${headers[4].padEnd(colWidths.size)} | ${headers[5].padEnd(colWidths.deps)} | ${headers[6].padEnd(colWidths.scripts)} | ${headers[7].padEnd(colWidths.status)} |`;
   lines.push(th);
 
   // Separator
-  const sep = `| :${'-'.repeat(colWidths.pkg - 1)} | :${'-'.repeat(colWidths.version - 1)} | :${'-'.repeat(colWidths.author - 1)} | :${'-'.repeat(colWidths.license - 1)} | :${'-'.repeat(colWidths.size - 1)} | :${'-'.repeat(colWidths.safety - 1)} | :${'-'.repeat(colWidths.status - 1)} |`;
+  const sep = `| :${'-'.repeat(colWidths.pkg - 1)} | :${'-'.repeat(colWidths.version - 1)} | :${'-'.repeat(colWidths.author - 1)} | :${'-'.repeat(colWidths.license - 1)} | :${'-'.repeat(colWidths.size - 1)} | :${'-'.repeat(colWidths.deps - 1)} | :${'-'.repeat(colWidths.scripts - 1)} | :${'-'.repeat(colWidths.status - 1)} |`;
   lines.push(sep);
 
   // Data rows
@@ -138,10 +140,10 @@ export function renderMultiTable(items) {
       : r.author;
 
     const licenseCol = r.licenseIsRisk ? yellow(r.license.padEnd(colWidths.license)) : green(r.license.padEnd(colWidths.license));
-    const safetyCol = r.safetyIsSafe ? green(r.safety.padEnd(colWidths.safety)) : yellow(r.safety.padEnd(colWidths.safety));
+    const scriptsCol = r.scriptsIsSafe ? green(r.scripts.padEnd(colWidths.scripts)) : yellow(r.scripts.padEnd(colWidths.scripts));
     const statusCol = r.isDeprecated ? red(r.status.padEnd(colWidths.status)) : green(r.status.padEnd(colWidths.status));
 
-    const line = `| ${bold(r.pkg.padEnd(colWidths.pkg))} | ${r.version.padEnd(colWidths.version)} | ${authorTruncated.padEnd(colWidths.author)} | ${licenseCol} | ${r.size.padEnd(colWidths.size)} | ${safetyCol} | ${statusCol} |`;
+    const line = `| ${bold(r.pkg.padEnd(colWidths.pkg))} | ${r.version.padEnd(colWidths.version)} | ${authorTruncated.padEnd(colWidths.author)} | ${licenseCol} | ${r.size.padEnd(colWidths.size)} | ${r.deps.padEnd(colWidths.deps)} | ${scriptsCol} | ${statusCol} |`;
     lines.push(line);
   }
 

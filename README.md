@@ -30,20 +30,9 @@ When you run `npm install <package>`, the default behavior downloads and extract
 
 #### Single Package Inspection
 
-```text
-+--------------------------------------------------------------------------+
-| PACKAGE SUMMARY: axios@1.7.2
-+--------------------------------------------------------------------------+
-| Author:          jasonsaayman
-| License:         MIT
-| Unpacked Size:   1.8 MB (direct)
-| Dependencies:    4 direct packages
-| Status:          Active
-| Safety:          Safe (No background scripts)
-+--------------------------------------------------------------------------+
-
-Install package? [Y/n]: 
-```
+<p align="center">
+  <img src="assets/prinsSingle.webp" alt="prins single package inspection" width="760" />
+</p>
 
 - Press **Enter** (defaults to Yes) to proceed with installation.
 - Press **n** to cancel. Nothing is downloaded or added to `package.json`.
@@ -54,21 +43,9 @@ Install package? [Y/n]:
 
 When installing multiple packages, `prins` queries the registry in parallel and formats the results in a single table:
 
-```text
-+---------------------------------------------------------------------------------------+
-| PRE-INSTALL SUMMARY (3 packages requested)
-+---------------------------------------------------------------------------------------+
-| Package       | Version | Author          | License | Size    | Safety   | Status     |
-| :------------ | :------ | :-------------- | :------ | :------ | :------- | :--------- |
-| express       | 4.19.2  | Douglas Wilson  | MIT     | 210 KB  | Safe     | Active     |
-| cors          | 2.8.5   | Troy Goode      | MIT     | 18 KB   | Safe     | Active     |
-| moment        | 2.30.1  | Iskren Chernev  | MIT     | 4.3 MB  | Safe     | Deprecated |
-+---------------------------------------------------------------------------------------+
-| TOTAL: 3 packages | ~4.5 MB unpacked
-+---------------------------------------------------------------------------------------+
-
-Install all 3 packages? [Y/n]: 
-```
+<p align="center">
+  <img src="assets/prinsMulti.webp" alt="prins multi-package inspection" width="860" />
+</p>
 
 ---
 

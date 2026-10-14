@@ -118,7 +118,7 @@ export async function run(rawArgs = process.argv.slice(2)) {
 
   // Clear fetching line
   if (!args.json && process.stdout.isTTY) {
-    process.stdout.write(' '.repeat(45) + '\r');
+    process.stdout.write('\r\x1b[2K');
   }
 
   if (failed.length > 0) {

@@ -19,10 +19,10 @@ When installing packages, the default package manager behavior downloads and ext
 - How much unpacked disk space the package consumes.
 - What license the package is distributed under.
 - Who authored and published the release.
-- Whether the package defines lifecycle install scripts (preinstall, install, postinstall).
+- Whether the package executes background installation scripts.
 - Whether the package version is marked deprecated by maintainers.
 
-**`prins`** (short for **pr**e-**ins**tall) is a command-line wrapper that fetches package metadata directly from the public npm registry before installation, displays a clear summary card, and asks for confirmation before downloading.
+**`prins`** is a command-line wrapper that fetches package metadata directly from the public npm registry before installation, displays a clear summary card, and asks for confirmation before downloading.
 
 ---
 
@@ -34,7 +34,7 @@ When installing packages, the default package manager behavior downloads and ext
   <img src="assets/prinsSingle.webp" alt="prins single package inspection" width="760" />
 </p>
 
-- Press **Enter** (defaults to Yes) to proceed with installation.
+- Press **Enter** to proceed with installation.
 - Press **n** to cancel. Nothing is downloaded or added to `package.json`.
 
 ---
@@ -52,8 +52,8 @@ When installing multiple packages, `prins` queries the registry in parallel and 
 ### What `prins` Checks
 
 1. **Unpacked Disk Size:** Displays the unpacked file size reported by registry metadata so you know the direct disk footprint before downloading.
-2. **License Classification:** Identifies permissive and copyleft licenses (such as GPL, AGPL, SSPL) from manifest metadata to highlight licensing terms.
-3. **Lifecycle Script Inspection:** Checks whether the package manifest defines background installation hooks (`preinstall`, `install`, `postinstall`).
+2. **License Classification:** Identifies permissive and copyleft license terms directly from registry metadata.
+3. **Installation Safety:** Checks whether the package executes background scripts during installation.
 4. **Deprecation Warnings:** Displays maintainer deprecation notices if a package version has been formally marked deprecated on npm.
 5. **Author & Maintainers:** Displays the package author, maintainer, or publisher name from registry metadata.
 
@@ -82,10 +82,10 @@ prins -E lodash@4.17.21
 # Multiple packages
 prins express cors dotenv
 
-# Skip confirmation prompt (preview receipt and install immediately)
+# Skip confirmation prompt and install immediately
 prins -y typescript
 
-# Preview only (inspect metadata without installing)
+# Preview metadata without installing
 prins --dry-run express
 ```
 
@@ -106,9 +106,9 @@ prins --dry-run express
 
 ### Design
 
-- **Zero Runtime Dependencies:** Built using Node.js built-ins (`fetch`, `node:readline/promises`, `node:child_process`, `node:util`).
+- **Zero Runtime Dependencies:** Built strictly using Node.js standard library built-ins.
 - **Direct Registry Queries:** Fetches package metadata directly from `registry.npmjs.org` with parallel batching and no third-party proxies.
-- **Pass-Through Flags:** Forwards flags (`-D`, `-E`, etc.) to the underlying package manager.
+- **Pass-Through Flags:** Forwards installation flags directly to the underlying package manager.
 
 ---
 

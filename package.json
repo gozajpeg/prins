@@ -1,7 +1,7 @@
 {
   "name": "prins",
   "version": "1.0.0",
-  "description": "Pre-install package inspector for npm, pnpm, yarn, and bun. Inspect size, licenses, authors, deprecations, and lifecycle scripts before packages touch your disk.",
+  "description": "npm pre-install package inspector and installer. Inspect size, licenses, authors, deprecations, and safety before packages touch your disk.",
   "type": "module",
   "main": "src/cli.js",
   "bin": {

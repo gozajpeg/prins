@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/prinsLogo.webp" alt="prins logo" width="380" />
   <h1>prins</h1>
-  <p><strong>Pre-install package inspector for npm, pnpm, yarn, and bun</strong></p>
+  <p><strong>npm pre-install package inspector and installer</strong></p>
   <p>Inspect size, licenses, authors, deprecations, and safety before packages touch your disk.</p>
 
   <p>

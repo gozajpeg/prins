@@ -69,7 +69,7 @@ export function parseArgs(rawArgs) {
 
 export function printHelp() {
   console.log(`
-${bold('prins')} - Pre-install package inspector for npm, pnpm, yarn, and bun
+${bold('prins')} - npm pre-install package inspector and installer
 
 ${bold('USAGE:')}
   prins <package...> [options]

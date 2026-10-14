@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/prinsLogo.webp" alt="prins logo" width="380" />
   <h1>prins</h1>
-  <p><strong>Pre-install package inspector for Node.js</strong></p>
+  <p><strong>Pre-install package inspector for npm, pnpm, yarn, and bun</strong></p>
   <p>Inspect size, licenses, authors, deprecations, and safety before packages touch your disk.</p>
 
   <p>
@@ -15,11 +15,11 @@
 
 ### Overview
 
-When you run `npm install <package>`, the default behavior downloads and extracts files without previewing key metadata:
+When installing packages, the default package manager behavior downloads and extracts files without previewing key metadata:
 - How much unpacked disk space the package consumes.
 - What license the package is distributed under.
 - Who authored and published the release.
-- Whether the package is safe to install or runs unexpected background scripts.
+- Whether the package defines lifecycle install scripts (preinstall, install, postinstall).
 - Whether the package version is marked deprecated by maintainers.
 
 **`prins`** (short for **pr**e-**ins**tall) is a command-line wrapper that fetches package metadata directly from the public npm registry before installation, displays a clear summary card, and asks for confirmation before downloading.
@@ -51,11 +51,11 @@ When installing multiple packages, `prins` queries the registry in parallel and 
 
 ### What `prins` Checks
 
-1. **Unpacked Disk Size:** Displays the unpacked file size from registry metadata so you know the disk footprint before downloading.
-2. **License Classification:** Flags copyleft licenses (such as GPL, AGPL, SSPL) so you can avoid unintended licensing obligations in commercial codebases.
-3. **Installation Safety:** Checks whether the package is safe to install or executes unexpected background scripts during installation.
+1. **Unpacked Disk Size:** Displays the unpacked file size reported by registry metadata so you know the direct disk footprint before downloading.
+2. **License Classification:** Identifies permissive and copyleft licenses (such as GPL, AGPL, SSPL) from manifest metadata to highlight licensing terms.
+3. **Lifecycle Script Inspection:** Checks whether the package manifest defines background installation hooks (`preinstall`, `install`, `postinstall`).
 4. **Deprecation Warnings:** Displays maintainer deprecation notices if a package version has been formally marked deprecated on npm.
-5. **Author & Maintainers:** Shows the package author and publisher identity.
+5. **Author & Maintainers:** Displays the package author, maintainer, or publisher name from registry metadata.
 
 ---
 
@@ -106,8 +106,8 @@ prins --dry-run express
 
 ### Design
 
-- **Zero Runtime Dependencies:** Built using Node.js built-ins (`fetch`, `node:util.styleText`, `node:readline/promises`, `node:child_process`).
-- **Fast:** Single HTTP request to `registry.npmjs.org/<package>/latest`.
+- **Zero Runtime Dependencies:** Built using Node.js built-ins (`fetch`, `node:readline/promises`, `node:child_process`, `node:util`).
+- **Direct Registry Queries:** Fetches package metadata directly from `registry.npmjs.org` with parallel batching and no third-party proxies.
 - **Pass-Through Flags:** Forwards flags (`-D`, `-E`, etc.) to the underlying package manager.
 
 ---

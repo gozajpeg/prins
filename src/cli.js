@@ -69,11 +69,10 @@ export function parseArgs(rawArgs) {
 
 export function printHelp() {
   console.log(`
-${bold('prins')} - npm pre-install package inspector and installer
+${bold('prins')} - npm pre-install package inspector
 
 ${bold('USAGE:')}
   prins <package...> [options]
-  pri <package...> [options]
 
 ${bold('OPTIONS:')}
   -y, --yes          Skip confirmation prompt and install immediately
@@ -86,7 +85,7 @@ ${bold('OPTIONS:')}
   -h, --help         Show this help message
 
 ${bold('PACKAGE MANAGER DETECTION:')}
-  Automatically detects lockfiles (pnpm, yarn, bun, npm) and delegates installation.
+  Automatically detects lockfiles across pnpm, yarn, bun, and npm to delegate installation.
 `);
 }
 

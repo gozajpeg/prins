@@ -5,8 +5,7 @@
   "type": "module",
   "main": "src/cli.js",
   "bin": {
-    "prins": "./bin/prins.js",
-    "pri": "./bin/prins.js"
+    "prins": "./bin/prins.js"
   },
   "files": [
     "bin",

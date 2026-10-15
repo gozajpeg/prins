@@ -29,4 +29,4 @@ jobs:
         run: node -e "const pkg = JSON.parse(require('fs').readFileSync('./package.json', 'utf8')); if (Object.keys(pkg.dependencies || {}).length > 0) { console.error('Dependencies must be empty'); process.exit(1); }"
 
       - name: Run unit tests
-        run: node --test test/*.test.js
+        run: node --test

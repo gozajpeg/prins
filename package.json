@@ -1,11 +1,11 @@
 {
-  "name": "prins",
+  "name": "prins-cli",
   "version": "1.0.0",
   "description": "Pre-install check for npm. Inspect size, license, deprecations, and install scripts before packages touch your disk.",
   "type": "module",
   "main": "src/cli.js",
   "bin": {
-    "prins": "./bin/prins.js"
+    "prins": "bin/prins.js"
   },
   "files": [
     "bin",
@@ -31,7 +31,7 @@
   "dependencies": {},
   "repository": {
     "type": "git",
-    "url": "https://github.com/gozajpeg/prins.git"
+    "url": "git+https://github.com/gozajpeg/prins.git"
   },
   "homepage": "https://github.com/gozajpeg/prins#readme",
   "bugs": {

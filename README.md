@@ -79,7 +79,7 @@ When installing multiple packages, `prins` queries the registry in parallel and 
 Install globally:
 
 ```bash
-npm install -g prins
+npm install -g prins-cli
 ```
 
 Run in place of `npm install`:

@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/prinsLogo.webp" alt="prins logo" width="380" />
   <h1>prins</h1>
-  <p><strong>npm Package Inspector & Installer</strong></p>
+  <p><strong>npm Pre-Install Package Inspector</strong></p>
   <p>Know what's inside before it hits your disk.</p>
 
   <p>

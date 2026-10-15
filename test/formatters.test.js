@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatBytes, renderSingleCard, renderMultiTable } from '../src/formatters.js';
+import { formatBytes, formatPublished, renderSingleCard, renderMultiTable } from '../src/formatters.js';
 import { stripAnsi } from '../src/colors.js';
 
 describe('formatters: formatBytes', () => {
@@ -102,5 +102,18 @@ describe('formatters: renderMultiTable', () => {
     assert.match(rendered, /moment/);
     assert.match(rendered, /TOTAL: 2 packages/);
     assert.match(rendered, /Notice \(moment@2\.30\.1\): moment is in maintenance mode/);
+  });
+});
+
+describe('formatters: formatPublished', () => {
+  test('formats known ISO timestamp to relative and date format', () => {
+    const published = formatPublished('2024-03-25T14:30:36.103Z');
+    assert.match(published, /2024-03-25/);
+    assert.match(published, /ago/);
+  });
+
+  test('returns Unknown for missing or invalid date', () => {
+    assert.equal(formatPublished(null), 'Unknown');
+    assert.equal(formatPublished('invalid-date'), 'Unknown');
   });
 });

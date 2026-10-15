@@ -1,27 +1,12 @@
-// CLI entrypoint and orchestrator
-
-import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
 import { fetchMultiplePackages } from './registry.js';
 import { assessPackageSafety } from './safety.js';
 import { renderSingleCard, renderMultiTable } from './formatters.js';
-import { promptConfirmation } from './prompt.js';
-import { installPackages } from './installer.js';
+import { promptConfirmation, promptInstall } from './prompt.js';
 import { detectPackageManager } from './detector.js';
+import { installPackages } from './installer.js';
 import { bold, cyan, yellow, red, gray } from './colors.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-function getVersion() {
-  try {
-    const pkgPath = path.join(__dirname, '..', 'package.json');
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-    return pkg.version || '1.0.0';
-  } catch {
-    return '1.0.0';
-  }
-}
 
 export function parseArgs(rawArgs) {
   const packages = [];
@@ -35,11 +20,8 @@ export function parseArgs(rawArgs) {
 
   for (let i = 0; i < rawArgs.length; i++) {
     const arg = rawArgs[i];
-    if (arg === '-h' || arg === '--help') {
-      help = true;
-    } else if (arg === '-v' || arg === '--version') {
-      version = true;
-    } else if (arg === '-y' || arg === '--yes') {
+
+    if (arg === '-y' || arg === '--yes') {
       yes = true;
     } else if (arg === '--dry-run') {
       dryRun = true;
@@ -47,8 +29,11 @@ export function parseArgs(rawArgs) {
       strict = true;
     } else if (arg === '--json') {
       json = true;
+    } else if (arg === '-h' || arg === '--help') {
+      help = true;
+    } else if (arg === '-v' || arg === '--version') {
+      version = true;
     } else if (arg.startsWith('-')) {
-      // Pass-through flags for package manager (-D, -E, --save-dev, etc.)
       flags.push(arg);
     } else {
       packages.push(arg);
@@ -103,14 +88,14 @@ export async function run(rawArgs = process.argv.slice(2)) {
   }
 
   if (args.packages.length === 0) {
-    console.error(`${red('Error:')} No packages specified.`);
-    console.error('Specify packages to inspect and install, for example: prins express cors');
+    console.error(`${red('Error:')} No package specified.\n`);
+    printHelp();
     return 1;
   }
 
-  // Fetch metadata from registry
-  if (!args.json && process.stdout.isTTY) {
-    process.stdout.write(gray(`Fetching metadata from npm registry...\r`));
+  // Fetch package metadata
+  if (!args.json) {
+    process.stdout.write(cyan('Fetching package metadata from registry...'));
   }
 
   const { succeeded, failed } = await fetchMultiplePackages(args.packages);
@@ -141,11 +126,15 @@ export async function run(rawArgs = process.argv.slice(2)) {
       license: pkg.license,
       unpackedSize: pkg.unpackedSize,
       dependenciesCount: pkg.dependenciesCount,
+      types: pkg.hasTypes ? 'bundled' : 'none',
+      publishedAt: pkg.publishedAt,
+      repository: pkg.repository,
       deprecated: safety.deprecation.isDeprecated ? safety.deprecation.reason : false,
       safety: {
         isSafe: safety.scripts.isSafe,
         scripts: safety.scripts.hooks,
-        licenseType: safety.license.type
+        licenseType: safety.license.type,
+        isFresh: safety.age?.isFresh ?? false
       }
     }));
     console.log(JSON.stringify(jsonOutput, null, 2));
@@ -182,23 +171,34 @@ export async function run(rawArgs = process.argv.slice(2)) {
     }
 
     const hasWarnings = assessedItems.some(item => !item.safety.isClean);
-    const defaultYes = !hasWarnings;
+    const hasScripts = assessedItems.some(item => !item.safety.scripts.isSafe);
+    const defaultChoice = hasWarnings ? 'no' : 'yes';
 
     let promptMsg;
-    if (assessedItems.length === 1) {
-      promptMsg = defaultYes
-        ? '\nInstall package? [Y/n]: '
-        : '\nInstall package? [y/N]: ';
+    if (hasScripts) {
+      const countStr = assessedItems.length === 1 ? 'package' : `all ${assessedItems.length} packages`;
+      promptMsg = `\nInstall ${countStr}? Type y to approve, N to cancel, or i to ignore scripts [y/N/i]: `;
     } else {
-      promptMsg = defaultYes
-        ? `\nInstall all ${assessedItems.length} packages? [Y/n]: `
-        : `\nInstall all ${assessedItems.length} packages? [y/N]: `;
+      const promptDefault = defaultChoice === 'yes' ? '[Y/n]' : '[y/N]';
+      const countStr = assessedItems.length === 1 ? 'package' : `all ${assessedItems.length} packages`;
+      promptMsg = `\nInstall ${countStr}? ${promptDefault}: `;
     }
 
-    const confirmed = await promptConfirmation(promptMsg, defaultYes);
-    if (!confirmed) {
+    const decision = await promptInstall(promptMsg, {
+      defaultChoice,
+      allowIgnoreScripts: hasScripts
+    });
+
+    if (decision === 'no' || decision === 'abort') {
       console.log('Installation cancelled.');
       return 0;
+    }
+
+    if (decision === 'ignore-scripts') {
+      console.log(yellow('Installing with lifecycle scripts disabled (--ignore-scripts)...'));
+      if (!args.flags.includes('--ignore-scripts')) {
+        args.flags.push('--ignore-scripts');
+      }
     }
   }
 
@@ -207,4 +207,14 @@ export async function run(rawArgs = process.argv.slice(2)) {
   console.log(gray(`Delegating to ${pm.name}...`));
   const exitCode = await installPackages(args.packages, args.flags, { pm });
   return exitCode;
+}
+
+function getVersion() {
+  try {
+    const pkgJsonPath = path.resolve(import.meta.dirname, '../package.json');
+    const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+    return pkg.version;
+  } catch {
+    return '1.0.0';
+  }
 }

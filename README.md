@@ -59,6 +59,10 @@ When installing multiple packages, `prins` queries the registry in parallel and 
 4. **Install Scripts:** Checks whether the package executes background scripts during installation.
 5. **Deprecation Warnings:** Displays maintainer deprecation notices if a package version has been formally marked deprecated on npm.
 6. **Author & Maintainers:** Displays the package author, maintainer, or publisher name from registry metadata.
+7. **TypeScript Types:** Detects whether type declarations are bundled inside the package archive.
+8. **Release Age & Freshness:** Displays release date and flags fresh releases published less than 7 days ago.
+9. **Source Repository:** Displays the verified source code repository link and alerts when package metadata lacks source links.
+10. **Script Safe-Install:** Provides an interactive option to proceed with installation while disabling lifecycle scripts using `--ignore-scripts`.
 
 ---
 

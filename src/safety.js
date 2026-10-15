@@ -123,13 +123,29 @@ export function classifyLicense(licenseStr) {
   };
 }
 
+export function checkReleaseAge(publishedAt) {
+  if (!publishedAt) return { isFresh: false, ageLabel: 'Unknown', diffDays: null };
+  const date = new Date(publishedAt);
+  if (isNaN(date.getTime())) return { isFresh: false, ageLabel: 'Unknown', diffDays: null };
+  const diffMs = Date.now() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const isFresh = diffDays >= 0 && diffDays < 7;
+  return {
+    isFresh,
+    diffDays,
+    description: isFresh ? `Published ${diffDays} day${diffDays === 1 ? '' : 's'} ago` : null
+  };
+}
+
 export function assessPackageSafety(manifest) {
   const scriptSafety = checkScriptsSafety(manifest.scripts);
   const licenseInfo = classifyLicense(manifest.license);
   const isDeprecated = Boolean(manifest.deprecated);
   const deprecationReason = manifest.deprecated || null;
+  const age = checkReleaseAge(manifest.publishedAt);
+  const hasNoRepo = manifest.repository === null;
 
-  const isClean = scriptSafety.isSafe && !licenseInfo.isRisk && !isDeprecated;
+  const isClean = scriptSafety.isSafe && !licenseInfo.isRisk && !isDeprecated && !age.isFresh;
 
   return {
     scripts: scriptSafety,
@@ -139,6 +155,8 @@ export function assessPackageSafety(manifest) {
       reason: deprecationReason,
       statusLabel: isDeprecated ? 'Deprecated' : 'Active'
     },
+    age,
+    hasNoRepo,
     isClean
   };
 }

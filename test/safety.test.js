@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkScriptsSafety, classifyLicense, assessPackageSafety } from '../src/safety.js';
+import { checkScriptsSafety, classifyLicense, assessPackageSafety, checkReleaseAge } from '../src/safety.js';
 
 describe('safety: checkScriptsSafety', () => {
   test('marks packages without install hooks as None', () => {
@@ -120,5 +120,25 @@ describe('safety: assessPackageSafety', () => {
     });
     assert.equal(assessment.isClean, false);
     assert.equal(assessment.scripts.isSafe, false);
+  });
+});
+
+describe('safety: checkReleaseAge', () => {
+  test('flags releases newer than 7 days as fresh', () => {
+    const recent = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    const result = checkReleaseAge(recent);
+    assert.equal(result.isFresh, true);
+    assert.equal(result.diffDays, 2);
+  });
+
+  test('marks mature releases as not fresh', () => {
+    const mature = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const result = checkReleaseAge(mature);
+    assert.equal(result.isFresh, false);
+  });
+
+  test('handles missing or null dates gracefully', () => {
+    assert.equal(checkReleaseAge(null).isFresh, false);
+    assert.equal(checkReleaseAge('invalid').isFresh, false);
   });
 });

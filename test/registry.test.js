@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseSpecifier, resolveAuthor, resolveLicense, resolveRegistryUrl } from '../src/registry.js';
+import { parseSpecifier, resolveAuthor, resolveLicense, resolveRegistryUrl, normalizeRepoUrl, extractPackageInfo } from '../src/registry.js';
 
 describe('registry: parseSpecifier', () => {
   test('parses plain package name', () => {
@@ -96,5 +96,49 @@ describe('registry: resolveRegistryUrl', () => {
   test('falls back to default registry when no config exists', () => {
     const url = resolveRegistryUrl();
     assert.ok(url.startsWith('http'));
+  });
+});
+
+describe('registry: normalizeRepoUrl', () => {
+  test('cleans git+ prefix and .git suffix', () => {
+    assert.equal(normalizeRepoUrl('git+https://github.com/expressjs/express.git'), 'https://github.com/expressjs/express');
+  });
+
+  test('cleans git:// protocol to https', () => {
+    assert.equal(normalizeRepoUrl('git://github.com/colinhacks/zod.git'), 'https://github.com/colinhacks/zod');
+  });
+
+  test('converts git@ ssh to https url', () => {
+    assert.equal(normalizeRepoUrl('git@github.com:foo/bar.git'), 'https://github.com/foo/bar');
+  });
+
+  test('handles object with url property', () => {
+    assert.equal(normalizeRepoUrl({ url: 'https://github.com/foo/bar' }), 'https://github.com/foo/bar');
+  });
+
+  test('returns null for missing or invalid urls', () => {
+    assert.equal(normalizeRepoUrl(null), null);
+    assert.equal(normalizeRepoUrl('not-a-link'), null);
+  });
+});
+
+describe('registry: extractPackageInfo', () => {
+  test('extracts types, publishedAt, and repository', () => {
+    const manifest = {
+      name: 'zod',
+      version: '3.22.4',
+      types: './index.d.ts',
+      repository: { url: 'git+https://github.com/colinhacks/zod.git' },
+      dependencies: { depA: '^1.0.0' }
+    };
+    const packument = {
+      time: { '3.22.4': '2023-10-01T00:00:00.000Z' }
+    };
+    const info = extractPackageInfo(manifest, '3.22.4', packument);
+    assert.equal(info.name, 'zod');
+    assert.equal(info.hasTypes, true);
+    assert.equal(info.repository, 'https://github.com/colinhacks/zod');
+    assert.equal(info.publishedAt, '2023-10-01T00:00:00.000Z');
+    assert.equal(info.dependenciesCount, 1);
   });
 });

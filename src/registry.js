@@ -38,8 +38,6 @@ export function resolveRegistryUrl(scope = null, customUrl = null) {
   return 'https://registry.npmjs.org';
 }
 
-// Package specifier parsing and npm registry queries
-
 export function parseSpecifier(specifier) {
   if (!specifier || typeof specifier !== 'string') {
     throw new Error('Package specifier must be a non-empty string');
@@ -88,21 +86,30 @@ export function resolveLicense(manifest) {
   return 'UNLICENSED';
 }
 
+export function normalizeRepoUrl(repo) {
+  if (!repo) return null;
+  let url = typeof repo === 'string' ? repo : repo.url;
+  if (!url || typeof url !== 'string') return null;
+  url = url.trim();
+  url = url.replace(/^git\+/, '').replace(/^git:\/\//, 'https://').replace(/\.git$/, '');
+  if (url.startsWith('git@github.com:')) {
+    url = 'https://github.com/' + url.slice('git@github.com:'.length);
+  }
+  return url.startsWith('http') ? url : null;
+}
+
 export async function fetchPackageMetadata(specifier, options = {}) {
   const { name, version } = parseSpecifier(specifier);
   const timeoutMs = options.timeoutMs ?? 10000;
   const scope = name.startsWith('@') ? name.slice(0, name.indexOf('/')) : null;
   const registryUrl = resolveRegistryUrl(scope, options.registryUrl);
 
-  // npm requires scoped names to be URI encoded as @scope%2Fpkg
   const encodedName = name.replace('/', '%2f');
-
-  // Try direct fetch for specific tag/version
-  const versionUrl = `${registryUrl}/${encodedName}/${encodeURIComponent(version)}`;
+  const packumentUrl = `${registryUrl}/${encodedName}`;
 
   let response;
   try {
-    response = await fetch(versionUrl, {
+    response = await fetch(packumentUrl, {
       signal: AbortSignal.timeout(timeoutMs),
       headers: {
         'Accept': 'application/json'
@@ -113,50 +120,46 @@ export async function fetchPackageMetadata(specifier, options = {}) {
   }
 
   if (response.status === 404) {
-    // If version 404, maybe specifier is a range or packument is needed
-    const packumentUrl = `${registryUrl}/${encodedName}`;
-    let packumentRes;
-    try {
-      packumentRes = await fetch(packumentUrl, {
-        signal: AbortSignal.timeout(timeoutMs),
-        headers: { 'Accept': 'application/json' }
-      });
-    } catch {
-      throw new Error(`Package "${name}" was not found on the npm registry.`);
-    }
-
-    if (!packumentRes.ok) {
-      throw new Error(`Package "${name}" was not found on the npm registry.`);
-    }
-
-    const packument = await packumentRes.json();
-    const latestVersion = packument['dist-tags']?.latest;
-    const targetVersion = (packument.versions && packument.versions[version])
-      ? version
-      : latestVersion;
-
-    if (!targetVersion || !packument.versions?.[targetVersion]) {
-      throw new Error(`Version "${version}" for package "${name}" was not found on the npm registry.`);
-    }
-
-    return extractPackageInfo(packument.versions[targetVersion], targetVersion);
+    throw new Error(`Package "${name}" was not found on the npm registry.`);
   }
 
   if (!response.ok) {
     throw new Error(`Registry returned HTTP ${response.status} for "${name}".`);
   }
 
-  const manifest = await response.json();
-  return extractPackageInfo(manifest, manifest.version || version);
+  const packument = await response.json();
+
+  if (!packument.versions) {
+    return extractPackageInfo(packument, packument.version || version, packument);
+  }
+
+  const latestVersion = packument['dist-tags']?.[version] || packument['dist-tags']?.latest;
+  const targetVersion = (packument.versions && packument.versions[version])
+    ? version
+    : latestVersion;
+
+  if (!targetVersion || !packument.versions?.[targetVersion]) {
+    throw new Error(`Version "${version}" for package "${name}" was not found on the npm registry.`);
+  }
+
+  return extractPackageInfo(packument.versions[targetVersion], targetVersion, packument);
 }
 
-function extractPackageInfo(manifest, resolvedVersion) {
+export function extractPackageInfo(manifest, resolvedVersion, packument = null) {
   const author = resolveAuthor(manifest);
   const license = resolveLicense(manifest);
   const unpackedSize = manifest.dist?.unpackedSize ?? null;
   const dependencies = manifest.dependencies ? Object.keys(manifest.dependencies) : [];
   const deprecated = manifest.deprecated || null;
   const scripts = manifest.scripts || {};
+  const repository = normalizeRepoUrl(manifest.repository || (packument && packument.repository));
+  const publishedAt = (packument && packument.time && (packument.time[resolvedVersion] || packument.time.modified)) || null;
+
+  const hasTypes = Boolean(
+    manifest.types ||
+    manifest.typings ||
+    (manifest.exports && typeof manifest.exports === 'object' && (manifest.exports.types || (manifest.exports['.'] && manifest.exports['.'].types)))
+  );
 
   return {
     name: manifest.name,
@@ -168,6 +171,9 @@ function extractPackageInfo(manifest, resolvedVersion) {
     dependencies,
     deprecated,
     scripts,
+    hasTypes,
+    publishedAt,
+    repository,
     raw: manifest
   };
 }

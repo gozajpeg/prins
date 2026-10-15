@@ -14,7 +14,11 @@ describe('detector: detectPackageManager', () => {
 
   after(() => {
     if (tmpDir && fs.existsSync(tmpDir)) {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
+      try {
+        fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+      } catch {
+        // Safe fallback for Windows filesystem handle release delay
+      }
     }
   });
 
